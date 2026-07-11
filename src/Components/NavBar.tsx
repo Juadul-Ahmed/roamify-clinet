@@ -2,33 +2,37 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { HiBars3 } from 'react-icons/hi2';
-import { FiLogOut, FiUser, FiPlusCircle, FiSettings, FiCompass } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiPlusCircle, FiSettings } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
+import { useSession, signOut } from '@/lib/auth-client';
 
-// Define clear TypeScript shapes for your future authentication integrations
-interface NavbarProps {
-  user?: {
-    name: string;
-    role: 'user' | 'admin';
-  } | null;
-  onLogout?: () => void;
-}
-
-export default function Navbar({ user = null, onLogout }: NavbarProps) {
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
-  // 1. Logged Out: Public Base Links (3 routes minimum)
+  const { data: session, isPending } = useSession();
+  const sessionUser = session?.user;
+
+  const role = (sessionUser as { role?: 'user' | 'admin' })?.role ?? 'user';
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/');
+    router.refresh();
+  };
+
+  // 1. Logged Out: Public Base Links
   const publicRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
     { name: 'About Us', path: '/about' },
   ];
 
-  // 2. Logged In: Standard Customer View (5 routes minimum)
+  // 2. Logged In: Standard Customer View
   const customerRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
@@ -37,7 +41,7 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
     { name: 'Help Support', path: '/support' },
   ];
 
-  // 3. Logged In: Travel Platform Administrator (5 routes minimum)
+  // 3. Logged In: Travel Platform Administrator
   const adminRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
@@ -46,11 +50,11 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
     { name: 'Dashboard', path: '/dashboard' },
   ];
 
-  // Dynamically assign mapping route based on actual user presence and role values
-  const activeRoutes = !user 
-    ? publicRoutes 
-    : user.role === 'admin' 
-      ? adminRoutes 
+  // Dynamically assign routes based on session presence and role
+  const activeRoutes = !sessionUser
+    ? publicRoutes
+    : role === 'admin'
+      ? adminRoutes
       : customerRoutes;
 
   const isActive = (path: string) => pathname === path;
@@ -59,7 +63,7 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
     <nav className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          
+
           {/* Brand Logo Identity */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-slate-900 tracking-tight">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500 text-white">
@@ -88,21 +92,21 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
 
           {/* Desktop Auth Controls Container */}
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
+            {isPending ? (
+              <div className="h-8 w-24 rounded-full bg-slate-100 animate-pulse" />
+            ) : sessionUser ? (
               <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
                 <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full">
                   <FiUser size={14} className="text-slate-500" />
-                  {user.name}
+                  {sessionUser.name}
                 </span>
-                {onLogout && (
-                  <button 
-                    onClick={onLogout}
-                    className="flex items-center gap-1.5 rounded-xl text-slate-600 hover:text-red-600 p-2 text-sm font-medium transition-colors"
-                  >
-                    <FiLogOut size={16} />
-                    <span>Logout</span>
-                  </button>
-                )}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 rounded-xl text-slate-600 hover:text-red-600 p-2 text-sm font-medium transition-colors"
+                >
+                  <FiLogOut size={16} />
+                  <span>Logout</span>
+                </button>
               </div>
             ) : (
               <>
@@ -116,7 +120,7 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile Hamburguer Toggle Button */}
+          {/* Mobile Hamburger Toggle Button */}
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -149,12 +153,12 @@ export default function Navbar({ user = null, onLogout }: NavbarProps) {
                 {route.name}
               </Link>
             ))}
-            
+
             {/* Mobile Auth Execution Links */}
             <div className="mt-4 pt-4 border-t border-slate-100 px-4">
-              {user ? (
+              {sessionUser ? (
                 <button
-                  onClick={() => { setIsOpen(false); onLogout?.(); }}
+                  onClick={() => { setIsOpen(false); handleLogout(); }}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-base font-medium text-red-600 hover:bg-red-100 transition-colors"
                 >
                   <FiLogOut size={18} />
