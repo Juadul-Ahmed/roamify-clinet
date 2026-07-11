@@ -1,13 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { TbMap2, TbCalendarEvent, TbCoin, TbStar } from "react-icons/tb";
 import StatCard from "@/Components/Dashboard/StatCard";
 import StatCardSkeleton from "@/Components/Dashboard/StatCardSkeleton";
 
 const OrganizerDashboardPage = () => {
+  const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = useSession();
   const user = session?.user;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const statCards = [
     { label: "Total Tours", value: "—", icon: TbMap2, color: "bg-sky-50 text-sky-600" },
@@ -16,7 +22,8 @@ const OrganizerDashboardPage = () => {
     { label: "Average Rating", value: "—", icon: TbStar, color: "bg-violet-50 text-violet-600" },
   ];
 
-  if (isPending) {
+  
+  if (!mounted || isPending) {
     return (
       <div>
         <div className="mb-8 h-8 w-64 animate-pulse rounded-xl bg-slate-100" />

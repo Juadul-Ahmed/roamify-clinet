@@ -16,13 +16,13 @@ import {
 } from 'react-icons/tb';
 
 const sidebarLinks = [
-  { name: 'Overview', path: '/organizer/dashboard', icon: TbLayoutDashboard },
-  { name: 'My Tours', path: '/organizer/tours', icon: TbMap2 },
-  { name: 'Add Tour', path: '/organizer/tours/add', icon: TbPlus },
-  { name: 'Bookings', path: '/organizer/bookings', icon: TbCalendarEvent },
-  { name: 'Reviews', path: '/organizer/reviews', icon: TbStar },
-  { name: 'Payouts', path: '/organizer/payouts', icon: TbCreditCard },
-  { name: 'Settings', path: '/organizer/settings', icon: TbSettings },
+  { name: 'Overview', path: '/dashboard/organizer', icon: TbLayoutDashboard },
+  { name: 'My Tours', path: '/dashboard/organizer/tours', icon: TbMap2 },
+  { name: 'Add Tour', path: '/dashboard/organizer/tours/add', icon: TbPlus },
+  { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: TbCalendarEvent },
+  { name: 'Reviews', path: '/dashboard/organizer/reviews', icon: TbStar },
+  { name: 'Payouts', path: '/dashboard/organizer/payouts', icon: TbCreditCard },
+  { name: 'Settings', path: '/dashboard/organizer/settings', icon: TbSettings },
 ];
 
 export default function Sidebar() {

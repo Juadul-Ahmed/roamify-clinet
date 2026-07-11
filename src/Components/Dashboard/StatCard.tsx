@@ -4,8 +4,8 @@ interface StatCardProps {
   label: string;
   value: string | number;
   icon: IconType;
-  color?: string; // Tailwind bg/text classes, e.g. "bg-sky-50 text-sky-600"
-  change?: number; // optional % change vs last period
+  color?: string; 
+  change?: number; 
 }
 
 export default function StatCard({
