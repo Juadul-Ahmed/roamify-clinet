@@ -12,12 +12,12 @@ export default function Hero() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Construct dynamic URL query params based on choices
+    
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (category) params.append('category', category);
 
-    // Push user straight to the explore view with pre-filled parameters
+    
     router.push(`/explore?${params.toString()}`);
   };
 
