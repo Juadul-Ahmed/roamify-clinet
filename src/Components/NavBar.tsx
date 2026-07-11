@@ -16,6 +16,7 @@ export default function Navbar() {
 
   const { data: session, isPending } = useSession();
   const sessionUser = session?.user;
+  console.log(sessionUser)
 
   const role = (sessionUser as { role?: 'user' | 'admin' })?.role ?? 'user';
 

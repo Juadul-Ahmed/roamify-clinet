@@ -5,15 +5,18 @@ import { Button, FieldError, Form, Input, Label, TextField } from "@heroui/react
 import { signUp } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { FiUser, FiBriefcase } from "react-icons/fi";
+
+type AccountRole = "traveler" | "organizer";
 
 export default function SignupForm() {
   const router = useRouter();
-  
-  // Clean component state bindings
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const [role, setRole] = useState<AccountRole>("traveler");
+
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,6 +30,7 @@ export default function SignupForm() {
         email,
         password,
         name,
+        role, 
         callbackURL: "/",
       });
 
@@ -46,11 +50,11 @@ export default function SignupForm() {
   return (
     <div className="mx-auto my-12 max-w-5xl px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl md:grid-cols-2">
-        
+
         {/* Left Column: Brand Context Info */}
         <div className="relative flex flex-col justify-between bg-slate-900 p-8 text-white lg:p-12">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.15),transparent_50%)]" />
-          
+
           <div className="relative z-10 space-y-6">
             <div>
               <span className="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
@@ -92,14 +96,51 @@ export default function SignupForm() {
           </div>
 
           <Form className="flex w-full flex-col gap-4" onSubmit={onSubmit}>
+
+            {/* Account Type / Role Toggle */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700 mb-2 block">I want to join as</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("traveler")}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                    role === "traveler"
+                      ? "border-sky-500 bg-sky-50 text-sky-700"
+                      : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  <FiUser size={16} />
+                  Traveler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("organizer")}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                    role === "organizer"
+                      ? "border-sky-500 bg-sky-50 text-sky-700"
+                      : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  <FiBriefcase size={16} />
+                  Organizer
+                </button>
+              </div>
+              <p className="mt-1.5 text-xs text-slate-400">
+                {role === "traveler"
+                  ? "Browse and book tours from local experts."
+                  : "List and manage your own tours and experiences."}
+              </p>
+            </div>
+
             {/* Full Name Field */}
             <TextField isRequired type="text">
               <Label className="text-sm font-medium text-slate-700">Name</Label>
-              <Input 
+              <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe" 
-                className="mt-1" 
+                placeholder="John Doe"
+                className="mt-1"
               />
               <FieldError className="text-xs text-red-500 mt-1" />
             </TextField>
@@ -116,11 +157,11 @@ export default function SignupForm() {
               }}
             >
               <Label className="text-sm font-medium text-slate-700">Email Address</Label>
-              <Input 
+              <Input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="john@example.com" 
-                className="mt-1" 
+                placeholder="john@example.com"
+                className="mt-1"
               />
               <FieldError className="text-xs text-red-500 mt-1" />
             </TextField>
@@ -137,12 +178,12 @@ export default function SignupForm() {
               }}
             >
               <Label className="text-sm font-medium text-slate-700">Password</Label>
-              <Input 
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••" 
-                className="mt-1" 
+                placeholder="••••••••"
+                className="mt-1"
               />
               <FieldError className="text-xs text-red-500 mt-1" />
             </TextField>
@@ -156,8 +197,8 @@ export default function SignupForm() {
 
             {/* Register Action Button */}
             <div className="flex flex-col gap-2 mt-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold flex items-center justify-center h-10 rounded-xl transition-colors"
                 isDisabled={isLoading}
               >
