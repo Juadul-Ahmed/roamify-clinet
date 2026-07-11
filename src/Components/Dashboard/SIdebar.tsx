@@ -22,7 +22,6 @@ const sidebarLinks = [
   { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: TbCalendarEvent },
   { name: 'Reviews', path: '/dashboard/organizer/reviews', icon: TbStar },
   { name: 'Payouts', path: '/dashboard/organizer/payouts', icon: TbCreditCard },
-  { name: 'Settings', path: '/dashboard/organizer/settings', icon: TbSettings },
 ];
 
 export default function Sidebar() {

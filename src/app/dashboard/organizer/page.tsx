@@ -6,23 +6,79 @@ import { TbMap2, TbCalendarEvent, TbCoin, TbStar } from "react-icons/tb";
 import StatCard from "@/Components/Dashboard/StatCard";
 import StatCardSkeleton from "@/Components/Dashboard/StatCardSkeleton";
 
+interface OrganizerStats {
+  totalTours: number;
+  totalBookings: number;
+  totalRevenue: number;
+  averageRating: number;
+}
+
 const OrganizerDashboardPage = () => {
   const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
+  const [stats, setStats] = useState<OrganizerStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/organizer/stats?organizerId=${user.id}`
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to load dashboard stats.");
+        }
+
+        const data = await res.json();
+        setStats(data.stats);
+      } catch (err) {
+        setStatsError("Unable to load stats right now.");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [user?.id]);
+
   const statCards = [
-    { label: "Total Tours", value: "—", icon: TbMap2, color: "bg-sky-50 text-sky-600" },
-    { label: "Total Bookings", value: "—", icon: TbCalendarEvent, color: "bg-emerald-50 text-emerald-600" },
-    { label: "Total Revenue", value: "—", icon: TbCoin, color: "bg-amber-50 text-amber-600" },
-    { label: "Average Rating", value: "—", icon: TbStar, color: "bg-violet-50 text-violet-600" },
+    {
+      label: "Total Tours",
+      value: statsLoading ? "—" : stats?.totalTours ?? 0,
+      icon: TbMap2,
+      color: "bg-sky-50 text-sky-600",
+    },
+    {
+      label: "Total Bookings",
+      value: statsLoading ? "—" : stats?.totalBookings ?? 0,
+      icon: TbCalendarEvent,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      label: "Total Revenue",
+      value: statsLoading ? "—" : `$${(stats?.totalRevenue ?? 0).toLocaleString()}`,
+      icon: TbCoin,
+      color: "bg-amber-50 text-amber-600",
+    },
+    {
+      label: "Average Rating",
+      value: statsLoading ? "—" : (stats?.averageRating ?? 0).toFixed(1),
+      icon: TbStar,
+      color: "bg-violet-50 text-violet-600",
+    },
   ];
 
-  
   if (!mounted || isPending) {
     return (
       <div>
@@ -47,6 +103,12 @@ const OrganizerDashboardPage = () => {
           Here&apos;s a quick look at your tours and bookings.
         </p>
       </div>
+
+      {statsError && (
+        <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-medium text-red-600">
+          {statsError}
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-10">
