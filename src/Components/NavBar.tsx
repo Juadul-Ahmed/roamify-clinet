@@ -56,7 +56,7 @@ export default function Navbar() {
   const adminRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
-    { name: 'Add Tour', path: '/items/add', icon: <FiPlusCircle size={16} /> },
+    { name: 'Add Tour', path: '/dashboard/admin/tours/add', icon: <FiPlusCircle size={16} /> },
     { name: 'Dashboard', path: '/dashboard/admin' },
   ];
 

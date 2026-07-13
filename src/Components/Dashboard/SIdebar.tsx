@@ -33,7 +33,6 @@ const linksByRole: Record<DashboardRole, { name: string; path: string; icon: Rea
     { name: 'Overview', path: '/dashboard/admin', icon: TbLayoutDashboard },
     { name: 'Manage Users', path: '/dashboard/admin/users', icon: TbUsers },
     { name: 'Manage Tours', path: '/dashboard/admin/tours', icon: TbMap2 },
-    { name: 'Settings', path: '/dashboard/admin/settings', icon: TbSettings },
   ],
 };
 
