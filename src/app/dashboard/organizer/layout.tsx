@@ -1,46 +1,30 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 
-import React from 'react';
-import Sidebar from "@/Components/Dashboard/Sidebar";
 
-export default function DashboardLayout({
+export default function OrganizerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { data: session, isPending } = useSession();
   const user = session?.user;
   const role = (user as { role?: string } | undefined)?.role;
 
- 
-  const requiredRole = pathname.startsWith("/dashboard/admin")
-    ? "admin"
-    : pathname.startsWith("/dashboard/organizer")
-      ? "organizer"
-      : null;
-
   useEffect(() => {
     if (isPending) return;
 
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-
-    if (requiredRole && role !== requiredRole) {
+    if (!user || role !== "organizer") {
       router.replace("/unauthorized");
     }
-  }, [isPending, user, role, requiredRole, router]);
+  }, [isPending, user, role, router]);
 
-  const isBlocked = isPending || !user || (requiredRole !== null && role !== requiredRole);
-
-  if (isBlocked) {
+  
+  if (isPending || !user || role !== "organizer") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-sky-500" />
@@ -50,8 +34,8 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-    <Sidebar/>
-      <main className="flex-1 md:ml-0 px-4 py-6 sm:px-6 lg:px-8">
+
+      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
         {children}
       </main>
     </div>
