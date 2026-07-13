@@ -20,6 +20,7 @@ export default function BookTourPage() {
   const router = useRouter();
   const { data: session, isPending: sessionLoading } = useSession();
   const user = session?.user;
+  const role = (user as { role?: string } | undefined)?.role;
 
   const [tour, setTour] = useState<Tour | null>(null);
   const [isLoadingTour, setIsLoadingTour] = useState(true);
@@ -59,8 +60,15 @@ export default function BookTourPage() {
     e.preventDefault();
     setSubmitError(null);
 
+    // Not logged in — send to login, preserving this tour page so they land back here after
     if (!user) {
-      setSubmitError("Please log in to book this tour.");
+      router.push(`/login?redirect=${encodeURIComponent(`/tours/${id}/book`)}`);
+      return;
+    }
+
+    // Logged in but not a traveler — block, don't call the API
+    if (role !== "traveler") {
+      setSubmitError("Only traveler accounts can book tours.");
       return;
     }
 
@@ -81,13 +89,15 @@ export default function BookTourPage() {
           userId: user.id,
           userName: user.name,
           userEmail: user.email,
+          userRole: role,
           guests: guestCount,
           date,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create your booking.");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to create your booking.");
       }
 
       setIsBooked(true);
@@ -136,6 +146,8 @@ export default function BookTourPage() {
     );
   }
 
+  const isBlockedRole = !!user && role !== "traveler";
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
@@ -165,30 +177,38 @@ export default function BookTourPage() {
         >
           <h2 className="text-lg font-bold text-slate-900">Book This Tour</h2>
 
-          <div>
-            <label className="text-sm font-medium text-slate-700 mb-1.5 block">Tour Date</label>
-            <input
-              required
-              type="date"
-              min={new Date().toISOString().split("T")[0]}
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-            />
-          </div>
+          {isBlockedRole && (
+            <div className="rounded-xl border border-amber-100 bg-amber-50 p-3 text-xs font-medium text-amber-700">
+              Only traveler accounts can book tours. You&apos;re signed in as {role}.
+            </div>
+          )}
 
-          <div>
-            <label className="text-sm font-medium text-slate-700 mb-1.5 block">Number of Guests</label>
-            <input
-              required
-              type="number"
-              min="1"
-              step="1"
-              value={guests}
-              onChange={(e) => setGuests(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-            />
-          </div>
+          <fieldset disabled={isBlockedRole} className="space-y-6 disabled:opacity-50">
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Tour Date</label>
+              <input
+                required
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-slate-700 mb-1.5 block">Number of Guests</label>
+              <input
+                required
+                type="number"
+                min="1"
+                step="1"
+                value={guests}
+                onChange={(e) => setGuests(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              />
+            </div>
+          </fieldset>
 
           <div className="rounded-2xl bg-slate-50 p-4 flex items-center justify-between">
             <span className="text-sm text-slate-500">Total</span>
@@ -203,11 +223,11 @@ export default function BookTourPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isBlockedRole}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white hover:bg-sky-600 transition-colors disabled:opacity-60"
           >
             {isSubmitting && <TbLoader2 size={16} className="animate-spin" />}
-            {isSubmitting ? "Booking..." : "Confirm Booking"}
+            {!user ? "Sign in to Book" : isSubmitting ? "Booking..." : "Confirm Booking"}
           </button>
         </form>
       </div>
