@@ -13,6 +13,22 @@ interface OrganizerStats {
   averageRating: number;
 }
 
+interface Booking {
+  _id: string;
+  tourTitle: string;
+  userName: string | null;
+  guests: number;
+  date: string;
+  totalPrice: number;
+  status: "pending" | "confirmed" | "cancelled";
+}
+
+const statusStyles: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-600",
+  confirmed: "bg-emerald-50 text-emerald-600",
+  cancelled: "bg-slate-100 text-slate-500",
+};
+
 const OrganizerDashboardPage = () => {
   const [mounted, setMounted] = useState(false);
   const { data: session, isPending } = useSession();
@@ -21,6 +37,9 @@ const OrganizerDashboardPage = () => {
   const [stats, setStats] = useState<OrganizerStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -35,21 +54,34 @@ const OrganizerDashboardPage = () => {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_URL}/organizer/stats?organizerId=${user.id}`
         );
-
-        if (!res.ok) {
-          throw new Error("Failed to load dashboard stats.");
-        }
-
+        if (!res.ok) throw new Error();
         const data = await res.json();
         setStats(data.stats);
-      } catch (err) {
+      } catch {
         setStatsError("Unable to load stats right now.");
       } finally {
         setStatsLoading(false);
       }
     };
 
+    const fetchRecentBookings = async () => {
+      try {
+        setBookingsLoading(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/bookings?organizerId=${user.id}`
+        );
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setRecentBookings((data.bookings || []).slice(0, 5));
+      } catch {
+        setRecentBookings([]);
+      } finally {
+        setBookingsLoading(false);
+      }
+    };
+
     fetchStats();
+    fetchRecentBookings();
   }, [user?.id]);
 
   const statCards = [
@@ -117,14 +149,42 @@ const OrganizerDashboardPage = () => {
         ))}
       </div>
 
-      {/* Empty State for Recent Activity */}
+      {/* Recent Bookings */}
       <div className="rounded-3xl border border-slate-100 bg-white shadow-sm">
         <div className="px-6 py-4 border-b border-slate-100">
           <h2 className="text-base font-semibold text-slate-900">Recent Bookings</h2>
         </div>
-        <div className="p-10 text-center text-sm text-slate-400">
-          No data yet. Once your tours start getting bookings, they&apos;ll show up here.
-        </div>
+
+        {bookingsLoading ? (
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse rounded-xl bg-slate-100" />
+            ))}
+          </div>
+        ) : recentBookings.length === 0 ? (
+          <div className="p-10 text-center text-sm text-slate-400">
+            No data yet. Once your tours start getting bookings, they&apos;ll show up here.
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-50">
+            {recentBookings.map((booking) => (
+              <div key={booking._id} className="flex items-center justify-between gap-4 px-6 py-3.5">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{booking.tourTitle}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {booking.userName || "Unknown traveler"} • {booking.guests} {booking.guests === 1 ? "guest" : "guests"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-semibold text-sky-600">${booking.totalPrice}</span>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${statusStyles[booking.status]}`}>
+                    {booking.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

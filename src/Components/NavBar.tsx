@@ -47,9 +47,9 @@ export default function Navbar() {
   const organizerRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
+    { name: 'Profile', path: '/profile' },
+     { name: 'Help Support', path: '/support' },
     { name: 'Dashboard', path: '/dashboard/organizer' },
-    { name: 'My Tours', path: '/dashboard/organizer/tours', icon: <FiPlusCircle size={16} /> },
-    { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: <FiCalendar size={16} /> },
   ];
 
   // 4. Logged In: Travel Platform Administrator

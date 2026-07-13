@@ -26,8 +26,6 @@ const linksByRole: Record<DashboardRole, { name: string; path: string; icon: Rea
     { name: 'My Tours', path: '/dashboard/organizer/tours', icon: TbMap2 },
     { name: 'Add Tour', path: '/dashboard/organizer/tours/add', icon: TbPlus },
     { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: TbCalendarEvent },
-    { name: 'Reviews', path: '/dashboard/organizer/reviews', icon: TbStar },
-    { name: 'Payouts', path: '/dashboard/organizer/payouts', icon: TbCreditCard },
   ],
   admin: [
     { name: 'Overview', path: '/dashboard/admin', icon: TbLayoutDashboard },
