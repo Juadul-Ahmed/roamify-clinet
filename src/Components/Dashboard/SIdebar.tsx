@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from '@/lib/auth-client';
 import {
   TbLayoutDashboard,
   TbMap2,
@@ -11,22 +12,50 @@ import {
   TbStar,
   TbCreditCard,
   TbSettings,
+  TbUsers,
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarLeftExpand,
 } from 'react-icons/tb';
 
-const sidebarLinks = [
-  { name: 'Overview', path: '/dashboard/organizer', icon: TbLayoutDashboard },
-  { name: 'My Tours', path: '/dashboard/organizer/tours', icon: TbMap2 },
-  { name: 'Add Tour', path: '/dashboard/organizer/tours/add', icon: TbPlus },
-  { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: TbCalendarEvent },
-  { name: 'Reviews', path: '/dashboard/organizer/reviews', icon: TbStar },
-  { name: 'Payouts', path: '/dashboard/organizer/payouts', icon: TbCreditCard },
-];
+type Role = 'traveler' | 'organizer' | 'admin';
+type DashboardRole = Exclude<Role, 'traveler'>; // only roles that have a sidebar
+
+const linksByRole: Record<DashboardRole, { name: string; path: string; icon: React.ElementType }[]> = {
+  organizer: [
+    { name: 'Overview', path: '/dashboard/organizer', icon: TbLayoutDashboard },
+    { name: 'My Tours', path: '/dashboard/organizer/tours', icon: TbMap2 },
+    { name: 'Add Tour', path: '/dashboard/organizer/tours/add', icon: TbPlus },
+    { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: TbCalendarEvent },
+    { name: 'Reviews', path: '/dashboard/organizer/reviews', icon: TbStar },
+    { name: 'Payouts', path: '/dashboard/organizer/payouts', icon: TbCreditCard },
+  ],
+  admin: [
+    { name: 'Overview', path: '/dashboard/admin', icon: TbLayoutDashboard },
+    { name: 'Manage Users', path: '/dashboard/admin/users', icon: TbUsers },
+    { name: 'Manage Tours', path: '/dashboard/admin/tours', icon: TbMap2 },
+    { name: 'Settings', path: '/dashboard/admin/settings', icon: TbSettings },
+  ],
+};
+
+const titleByRole: Record<DashboardRole, string> = {
+  organizer: 'Organizer',
+  admin: 'Admin',
+};
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const role = (session?.user as { role?: Role })?.role;
+
+  // Travelers (or any unrecognized/missing role) don't get a dashboard sidebar
+  if (role !== 'organizer' && role !== 'admin') {
+    return null;
+  }
+
+  const sidebarLinks = linksByRole[role];
+  const title = titleByRole[role];
 
   const isActive = (path: string) => pathname === path;
 
@@ -42,7 +71,7 @@ export default function Sidebar() {
           <span className="sr-only">Open Sidebar</span>
           <TbLayoutSidebarLeftExpand size={20} />
         </button>
-       
+        <span className="ml-3 text-sm font-semibold text-slate-700">{title} Menu</span>
       </div>
 
       {/* Overlay for mobile drawer */}
@@ -61,7 +90,7 @@ export default function Sidebar() {
         `}
       >
         <div className="flex h-16 items-center justify-between px-5 border-b border-slate-100">
-          <span className="text-lg font-bold text-slate-900">Dashboard</span>
+          <span className="text-lg font-bold text-slate-900">{title}</span>
           <button
             onClick={() => setIsOpen(false)}
             type="button"

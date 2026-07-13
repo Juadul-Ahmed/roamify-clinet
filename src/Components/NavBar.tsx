@@ -4,10 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { HiBars3 } from 'react-icons/hi2';
-import { FiLogOut, FiUser, FiPlusCircle, FiSettings } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiPlusCircle, FiSettings, FiCalendar } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
 import { useSession, signOut } from '@/lib/auth-client';
+
+type Role = 'traveler' | 'organizer' | 'admin';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,9 +18,8 @@ export default function Navbar() {
 
   const { data: session, isPending } = useSession();
   const sessionUser = session?.user;
-  console.log(sessionUser)
 
-  const role = (sessionUser as { role?: 'user' | 'admin' })?.role ?? 'user';
+  const role = (sessionUser as { role?: Role })?.role ?? 'traveler';
 
   const handleLogout = async () => {
     await signOut();
@@ -33,8 +34,8 @@ export default function Navbar() {
     { name: 'About Us', path: '/about' },
   ];
 
-  // 2. Logged In: Standard Customer View
-  const customerRoutes = [
+  // 2. Logged In: Traveler View
+  const travelerRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
     { name: 'My Bookings', path: '/bookings' },
@@ -42,13 +43,21 @@ export default function Navbar() {
     { name: 'Help Support', path: '/support' },
   ];
 
-  // 3. Logged In: Travel Platform Administrator
+  // 3. Logged In: Organizer View
+  const organizerRoutes = [
+    { name: 'Home', path: '/' },
+    { name: 'Explore', path: '/explore' },
+    { name: 'Dashboard', path: '/dashboard/organizer' },
+    { name: 'My Tours', path: '/dashboard/organizer/tours', icon: <FiPlusCircle size={16} /> },
+    { name: 'Bookings', path: '/dashboard/organizer/bookings', icon: <FiCalendar size={16} /> },
+  ];
+
+  // 4. Logged In: Travel Platform Administrator
   const adminRoutes = [
     { name: 'Home', path: '/' },
     { name: 'Explore', path: '/explore' },
     { name: 'Add Tour', path: '/items/add', icon: <FiPlusCircle size={16} /> },
-    { name: 'Manage Tours', path: '/items/manage', icon: <FiSettings size={16} /> },
-    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Dashboard', path: '/dashboard/admin' },
   ];
 
   // Dynamically assign routes based on session presence and role
@@ -56,7 +65,9 @@ export default function Navbar() {
     ? publicRoutes
     : role === 'admin'
       ? adminRoutes
-      : customerRoutes;
+      : role === 'organizer'
+        ? organizerRoutes
+        : travelerRoutes;
 
   const isActive = (path: string) => pathname === path;
 
