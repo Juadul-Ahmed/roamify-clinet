@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { TbUsers, TbBriefcase, TbMap2, TbCoin, TbTicket } from "react-icons/tb";
 import StatCard from "@/Components/Dashboard/StatCard";
 import StatCardSkeleton from "@/Components/Dashboard/StatCardSkeleton";
+import { apiFetch } from "@/lib/api-client";
 import {
   LineChart,
   Line,
@@ -68,6 +69,7 @@ export default function AdminDashboardPage() {
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -75,7 +77,7 @@ export default function AdminDashboardPage() {
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/stats`);
+        const res = await apiFetch("/admin/stats");
         if (!res.ok) throw new Error();
         const data = await res.json();
         setStats(data.stats);
@@ -89,7 +91,7 @@ export default function AdminDashboardPage() {
     const fetchAnalytics = async () => {
       try {
         setAnalyticsLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/analytics`);
+        const res = await apiFetch("/admin/analytics");
         if (!res.ok) throw new Error();
         const data = await res.json();
         setSignupsByDay(data.signupsByDay || []);

@@ -5,6 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { TbMap2, TbCalendarEvent, TbCoin, TbStar } from "react-icons/tb";
 import StatCard from "@/Components/Dashboard/StatCard";
 import StatCardSkeleton from "@/Components/Dashboard/StatCardSkeleton";
+import { apiFetch } from "@/lib/api-client";
 
 interface OrganizerStats {
   totalTours: number;
@@ -42,6 +43,7 @@ const OrganizerDashboardPage = () => {
   const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -51,9 +53,7 @@ const OrganizerDashboardPage = () => {
     const fetchStats = async () => {
       try {
         setStatsLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/organizer/stats?organizerId=${user.id}`
-        );
+        const res = await apiFetch("/organizer/stats");
         if (!res.ok) throw new Error();
         const data = await res.json();
         setStats(data.stats);
@@ -67,9 +67,7 @@ const OrganizerDashboardPage = () => {
     const fetchRecentBookings = async () => {
       try {
         setBookingsLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/bookings?organizerId=${user.id}`
-        );
+        const res = await apiFetch("/bookings");
         if (!res.ok) throw new Error();
         const data = await res.json();
         setRecentBookings((data.bookings || []).slice(0, 5));

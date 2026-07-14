@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Button, Input, Label, Modal, Surface, TextField } from "@heroui/react";
 import { BiPencil } from "react-icons/bi";
+import { apiFetch } from "@/lib/api-client";
 
 const categories = ["Adventure", "Beach", "Mountain", "Cultural", "City"];
 
@@ -38,9 +39,7 @@ export function EditTourModal({ tourId, onUpdated }: EditTourModalProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${tourId}`, {
-        credentials: "include",
-      });
+      const res = await apiFetch(`/tours/${tourId}`);
 
       if (!res.ok) throw new Error("Failed to load tour.");
 
@@ -66,10 +65,8 @@ export function EditTourModal({ tourId, onUpdated }: EditTourModalProps) {
     setError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${tourId}`, {
+      const res = await apiFetch(`/tours/${tourId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           title,
           location,
@@ -80,7 +77,10 @@ export function EditTourModal({ tourId, onUpdated }: EditTourModalProps) {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update tour.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update tour.");
+      }
 
       const data = await res.json();
       onUpdated?.(data.tour);

@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "@/lib/auth-client";
 import { TbPhoto, TbLoader2 } from "react-icons/tb";
+import { apiFetch } from "@/lib/api-client";
 
 const categories = ["Adventure", "Beach", "Mountain", "Cultural", "City"];
 
 export default function AdminAddTourPage() {
   const router = useRouter();
-  const { data: session } = useSession();
-  const user = session?.user;
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -70,9 +68,8 @@ export default function AdminAddTourPage() {
       const imageUrl = await uploadImageToImgBB(imageFile);
       setIsUploadingImage(false);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours`, {
+      const res = await apiFetch("/tours", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
           location,
@@ -80,13 +77,12 @@ export default function AdminAddTourPage() {
           category,
           description,
           image: imageUrl,
-          organizerId: user?.id,
-          organizerName: user?.name ? `${user.name} (Admin)` : "Admin",
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create tour.");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to create tour.");
       }
 
       router.push("/dashboard/admin/tours");

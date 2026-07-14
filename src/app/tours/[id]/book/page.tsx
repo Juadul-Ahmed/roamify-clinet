@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { TbMapPin, TbLoader2, TbCircleCheck } from "react-icons/tb";
 import { useSession } from "@/lib/auth-client";
+import { apiFetch } from "@/lib/api-client";
 
 interface Tour {
   _id: string;
@@ -35,6 +36,7 @@ export default function BookTourPage() {
   useEffect(() => {
     const fetchTour = async () => {
       try {
+        // Public route — plain fetch is fine, no auth needed to view a tour
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${id}`);
 
         if (!res.ok) {
@@ -80,16 +82,10 @@ export default function BookTourPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/bookings`, {
+      const res = await apiFetch("/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           tourId: id,
-          userId: user.id,
-          userName: user.name,
-          userEmail: user.email,
-          userRole: role,
           guests: guestCount,
           date,
         }),

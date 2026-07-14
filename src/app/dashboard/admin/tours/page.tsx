@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TbSearch, TbTrash, TbEdit, TbX } from "react-icons/tb";
+import { apiFetch } from "@/lib/api-client";
 
 interface Tour {
   _id: string;
@@ -35,6 +36,7 @@ export default function ManageToursPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
 
+      // Public route — plain fetch works fine here, no auth needed to view tours
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load tours.");
       const data = await res.json();
@@ -57,15 +59,18 @@ export default function ManageToursPage() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${id}`, {
+      const res = await apiFetch(`/tours/${id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed to delete tour.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete tour.");
+      }
 
       setTours((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
-      alert("Could not delete this tour. Please try again.");
+      alert(err instanceof Error ? err.message : "Could not delete this tour. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -79,9 +84,8 @@ export default function ManageToursPage() {
     setEditError(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${editingTour._id}`, {
+      const res = await apiFetch(`/tours/${editingTour._id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editingTour.title,
           location: editingTour.location,
@@ -92,13 +96,16 @@ export default function ManageToursPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update tour.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update tour.");
+      }
 
       const data = await res.json();
-      setTours((prev) => prev.map((t) => (t._id === editingTour._id ? data.tour : t)));
+      setTours((prev) => prev.map((t) => (t._id === editingTour._id ? { ...t, ...data.tour } : t)));
       setEditingTour(null);
     } catch (err) {
-      setEditError("Could not save changes. Please try again.");
+      setEditError(err instanceof Error ? err.message : "Could not save changes. Please try again.");
     } finally {
       setIsSaving(false);
     }

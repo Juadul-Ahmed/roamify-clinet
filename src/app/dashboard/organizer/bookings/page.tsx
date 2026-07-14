@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { TbCalendar, TbUsers, TbCheck, TbX, TbSearch } from "react-icons/tb";
+import { apiFetch } from "@/lib/api-client";
 
 interface Booking {
   _id: string;
@@ -39,6 +40,7 @@ export default function OrganizerBookingsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -48,9 +50,7 @@ export default function OrganizerBookingsPage() {
     const fetchBookings = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/bookings?organizerId=${user.id}`
-        );
+        const res = await apiFetch("/bookings");
         if (!res.ok) throw new Error("Failed to load bookings.");
         const data = await res.json();
         setBookings(data.bookings);
@@ -67,19 +67,21 @@ export default function OrganizerBookingsPage() {
   const handleStatusChange = async (id: string, status: string) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/bookings/${id}/status`, {
+      const res = await apiFetch(`/bookings/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
 
-      if (!res.ok) throw new Error("Failed to update status.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update status.");
+      }
 
       setBookings((prev) =>
         prev.map((b) => (b._id === id ? { ...b, status: status as Booking["status"] } : b))
       );
     } catch (err) {
-      alert("Could not update this booking. Please try again.");
+      alert(err instanceof Error ? err.message : "Could not update this booking. Please try again.");
     } finally {
       setUpdatingId(null);
     }

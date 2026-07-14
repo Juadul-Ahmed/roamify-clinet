@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TbPhoto, TbLoader2 } from "react-icons/tb";
 import { useSession } from "@/lib/auth-client";
+import { apiFetch } from "@/lib/api-client";
 
 const categories = ["Adventure", "Beach", "Mountain", "Cultural", "City"];
 
@@ -75,10 +76,8 @@ export default function AddTourPage() {
       const imageUrl = await uploadImageToImgBB(imageFile);
       setIsUploadingImage(false);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours`, {
+      const res = await apiFetch("/tours", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           title,
           location,
@@ -86,13 +85,12 @@ export default function AddTourPage() {
           category,
           description,
           image: imageUrl,
-          organizerId: user.id,
-          organizerName: user.name,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create tour.");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to create tour.");
       }
 
       router.push("/dashboard/organizer/tours");
@@ -125,7 +123,7 @@ export default function AddTourPage() {
             className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 h-48 cursor-pointer hover:bg-slate-100 transition-colors overflow-hidden"
           >
             {imagePreview ? (
-              // eslint-disable-next-line @next/next/no-img-element
+           
               <img src={imagePreview} alt="Tour preview" className="h-full w-full object-cover" />
             ) : (
               <>

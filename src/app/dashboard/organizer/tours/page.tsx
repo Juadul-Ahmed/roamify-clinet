@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
 import { TbPlus, TbEdit, TbTrash, TbMapPin } from "react-icons/tb";
 import { EditTourModal } from "@/Components/Dashboard/EditTourModal";
+import { apiFetch } from "@/lib/api-client";
 
 interface Tour {
   _id: string;
@@ -37,9 +38,7 @@ export default function MyToursPage() {
     const fetchTours = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/tours?organizerId=${user.id}`
-        );
+        const res = await apiFetch(`/tours?organizerId=${user.id}`);
 
         if (!res.ok) {
           throw new Error("Failed to load your tours.");
@@ -64,17 +63,18 @@ export default function MyToursPage() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/tours/${id}`, {
+      const res = await apiFetch(`/tours/${id}`, {
         method: "DELETE",
       });
 
       if (!res.ok) {
-        throw new Error("Failed to delete tour.");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete tour.");
       }
 
       setTours((prev) => prev.filter((t) => t._id !== id));
     } catch (err) {
-      alert("Could not delete this tour. Please try again.");
+      alert(err instanceof Error ? err.message : "Could not delete this tour. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -169,11 +169,11 @@ export default function MyToursPage() {
 
                 <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100">
                   <EditTourModal
-  tourId={tour._id}
-  onUpdated={(updated) =>
-    setTours((prev) => prev.map((t) => (t._id === updated._id ? updated : t)))
-  }
-/>
+                    tourId={tour._id}
+                    onUpdated={(updated) =>
+                      setTours((prev) =>prev.map((t) => (t._id === updated._id ? { ...t, ...updated } : t)))
+                    }
+                  />
                   <button
                     onClick={() => handleDelete(tour._id)}
                     disabled={deletingId === tour._id}

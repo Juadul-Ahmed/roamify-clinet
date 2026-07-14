@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { TbSearch, TbTrash, TbUserCircle } from "react-icons/tb";
+import { apiFetch } from "@/lib/api-client";
 
 interface AppUser {
   _id: string;
@@ -38,7 +39,7 @@ export default function ManageUsersPage() {
       if (search) params.set("search", search);
       if (roleFilter !== "All") params.set("role", roleFilter);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/users?${params.toString()}`);
+      const res = await apiFetch(`/admin/users?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load users.");
       const data = await res.json();
       setUsers(data.users);
@@ -58,19 +59,21 @@ export default function ManageUsersPage() {
   const handleRoleChange = async (id: string, newRole: string) => {
     setUpdatingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/users/${id}/role`, {
+      const res = await apiFetch(`/admin/users/${id}/role`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: newRole }),
       });
 
-      if (!res.ok) throw new Error("Failed to update role.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to update role.");
+      }
 
       setUsers((prev) =>
         prev.map((u) => (u._id === id ? { ...u, role: newRole as AppUser["role"] } : u))
       );
     } catch (err) {
-      alert("Could not update this user's role. Please try again.");
+      alert(err instanceof Error ? err.message : "Could not update this user's role. Please try again.");
     } finally {
       setUpdatingId(null);
     }
@@ -81,15 +84,18 @@ export default function ManageUsersPage() {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/admin/users/${id}`, {
+      const res = await apiFetch(`/admin/users/${id}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed to delete user.");
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to delete user.");
+      }
 
       setUsers((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
-      alert("Could not delete this user. Please try again.");
+      alert(err instanceof Error ? err.message : "Could not delete this user. Please try again.");
     } finally {
       setDeletingId(null);
     }

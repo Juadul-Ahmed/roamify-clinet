@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TbCalendar, TbUsers, TbTrash, TbMapPin, TbTicket } from "react-icons/tb";
 import { useSession } from "@/lib/auth-client";
+import { apiFetch } from "@/lib/api-client";
 
 interface Booking {
   _id: string;
@@ -38,10 +39,7 @@ export default function MyBookingsPage() {
     const fetchBookings = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/bookings?userId=${user.id}`,
-          { credentials: "include" }
-        );
+        const res = await apiFetch("/bookings");
 
         if (!res.ok) {
           throw new Error("Failed to load your bookings.");
@@ -64,9 +62,8 @@ export default function MyBookingsPage() {
 
     setCancellingId(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/bookings/${id}`, {
+      const res = await apiFetch(`/bookings/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       if (!res.ok) {
