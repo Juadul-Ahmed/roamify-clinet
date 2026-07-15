@@ -194,7 +194,7 @@ export function EditTourModal({ tourId, onUpdated }: EditTourModalProps) {
               <Button
                 type="submit"
                 form="edit-tour-form"
-                disabled={isLoading || isSaving}
+                isDisabled={isLoading || isSaving}
                 slot={error ? undefined : "close"}
               >
                 {isSaving ? "Saving..." : "Save Changes"}
