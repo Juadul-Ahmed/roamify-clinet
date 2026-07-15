@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { HiBars3 } from 'react-icons/hi2';
-import { FiLogOut, FiUser, FiPlusCircle, FiSettings, FiCalendar } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiPlusCircle, } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 import { HiX } from 'react-icons/hi';
 import { useSession, signOut } from '@/lib/auth-client';
@@ -27,38 +27,40 @@ export default function Navbar() {
     router.refresh();
   };
 
-  // 1. Logged Out: Public Base Links
-  const publicRoutes = [
-    { name: 'Home', path: '/' },
-    { name: 'Explore', path: '/explore' },
-    { name: 'About Us', path: '/about' },
-  ];
+  interface NavRoute {
+  name: string;
+  path: string;
+  icon?: React.ReactNode;
+}
 
-  // 2. Logged In: Traveler View
-  const travelerRoutes = [
-    { name: 'Home', path: '/' },
-    { name: 'Explore', path: '/explore' },
-    { name: 'My Bookings', path: '/bookings' },
-    { name: 'Profile', path: '/profile' },
-    { name: 'Help Support', path: '/support' },
-  ];
+const publicRoutes: NavRoute[] = [
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+  { name: 'About Us', path: '/about' },
+];
 
-  // 3. Logged In: Organizer View
-  const organizerRoutes = [
-    { name: 'Home', path: '/' },
-    { name: 'Explore', path: '/explore' },
-    { name: 'Profile', path: '/profile' },
-     { name: 'Help Support', path: '/support' },
-    { name: 'Dashboard', path: '/dashboard/organizer' },
-  ];
+const travelerRoutes: NavRoute[] = [
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+  { name: 'My Bookings', path: '/bookings' },
+  { name: 'Profile', path: '/profile' },
+  { name: 'Help Support', path: '/support' },
+];
 
-  // 4. Logged In: Travel Platform Administrator
-  const adminRoutes = [
-    { name: 'Home', path: '/' },
-    { name: 'Explore', path: '/explore' },
-    { name: 'Add Tour', path: '/dashboard/admin/tours/add', icon: <FiPlusCircle size={16} /> },
-    { name: 'Dashboard', path: '/dashboard/admin' },
-  ];
+const organizerRoutes: NavRoute[] = [
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+  { name: 'Profile', path: '/profile' },
+  { name: 'Help Support', path: '/support' },
+  { name: 'Dashboard', path: '/dashboard/organizer' },
+];
+
+const adminRoutes: NavRoute[] = [
+  { name: 'Home', path: '/' },
+  { name: 'Explore', path: '/explore' },
+  { name: 'Add Tour', path: '/dashboard/admin/tours/add', icon: <FiPlusCircle size={16} /> },
+  { name: 'Dashboard', path: '/dashboard/admin' },
+];
 
   // Dynamically assign routes based on session presence and role
   const activeRoutes = !sessionUser
