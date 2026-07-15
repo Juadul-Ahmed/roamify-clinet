@@ -160,6 +160,4 @@ npm run build   # Production build
 npm run start   # Start production server
 ```
 
-## License
 
-This project was built as part of a course assignment (SCIC Assignment 3).
