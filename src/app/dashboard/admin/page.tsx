@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
                 <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                 <Tooltip
                   labelFormatter={(label) => formatDayLabel(label as string)}
-                  formatter={(value: number) => [`$${value}`, "Revenue"]}
+                  formatter={(value) => [`$${value ?? 0}`, "Revenue"]}
                   contentStyle={{ borderRadius: 12, border: "1px solid #f1f5f9", fontSize: 12 }}
                 />
                 <Bar dataKey="revenue" fill="#10b981" radius={[6, 6, 0, 0]} />
